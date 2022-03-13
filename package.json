@@ -1,0 +1,23 @@
+{
+  "name": "node-facebook",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SidisLiveYT/node-facebook.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SidisLiveYT/node-facebook/issues"
+  },
+  "homepage": "https://github.com/SidisLiveYT/node-facebook#readme",
+  "dependencies": {
+    "axios": "^0.26.1"
+  }
+}
