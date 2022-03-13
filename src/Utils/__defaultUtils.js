@@ -4,14 +4,23 @@ class utils {
   static async __rawfetchBody(
     rawApiUrl,
     apiOptions,
-    returnType = 'body',
+    returnType = 'data',
     ignoreError = true,
     filters,
   ) {
     if (!(rawApiUrl && typeof rawApiUrl === 'string' && rawApiUrl !== ''))
       return undefined
     try {
-      Axios.get(rawApiUrl)
+      let rawResponse = await Axios.get(rawApiUrl, { ...apiOptions })
+      if (
+        !(
+          rawResponse &&
+          rawResponse.status === 200 &&
+          rawResponse?.[returnType ?? 'data']
+        )
+      )
+        throw new Error('Invalid Response Fetched from Api Url')
+      else return rawResponse?.[returnType ?? 'data']
     } catch (rawError) {
       if (ignoreError) return utils.__errorHandling(rawError)
       else throw rawError
