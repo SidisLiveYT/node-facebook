@@ -1,0 +1,23 @@
+
+
+Mon Mar 14 2022 11:01:44 GMT+0530 (India Standard Time) | 
+ ErrorMessage: Unexpected token r in JSON at position 0
+ ErrorStack: SyntaxError: Unexpected token r in JSON at position 0
+    at JSON.parse (<anonymous>)
+    at Function.__customParser (E:\Workflow Environment - Private Field\Github Repo Development\node-facebook\src\Utils\__defaultUtils.js:130:28)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async Function.__extractor (E:\Workflow Environment - Private Field\Github Repo Development\node-facebook\src\Classes\fb-video.js:40:23)
+
+Mon Mar 14 2022 11:05:07 GMT+0530 (India Standard Time) | 
+ ErrorMessage: requireLazy is not defined
+ ErrorStack: ReferenceError: requireLazy is not defined
+    at Object.<anonymous> (E:\Workflow Environment - Private Field\Github Repo Development\node-facebook\src\cache\cache.js:1:1)
+    at Module._compile (node:internal/modules/cjs/loader:1097:14)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1149:10)
+    at Module.load (node:internal/modules/cjs/loader:975:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:822:12)
+    at Module.require (node:internal/modules/cjs/loader:999:19)
+    at require (node:internal/modules/cjs/helpers:102:18)
+    at Function.__customParser (E:\Workflow Environment - Private Field\Github Repo Development\node-facebook\src\Utils\__defaultUtils.js:131:29)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async Function.__extractor (E:\Workflow Environment - Private Field\Github Repo Development\node-facebook\src\Classes\fb-video.js:40:23)

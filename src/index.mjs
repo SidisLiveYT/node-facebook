@@ -1,4 +1,4 @@
-import APIs from './index.js'
+import facebook from './index.js'
 
-export default APIs
-export const YoutubeApiLTE = APIs.YoutubeApiLTE
+export default facebook
+export const main = facebook.main
