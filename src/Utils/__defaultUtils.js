@@ -11,29 +11,145 @@ class utils {
   static async __rawfetchBody(
     rawApiUrl,
     apiOptions,
+    apiMethod = 'GET',
     returnType = 'data',
     ignoreError = true,
-    filters,
+    filters = {},
   ) {
-    if (!(rawApiUrl && typeof rawApiUrl === 'string' && rawApiUrl !== ''))
+    if (
+      !(
+        rawApiUrl &&
+        typeof rawApiUrl === 'string' &&
+        rawApiUrl !== '' &&
+        apiMethod &&
+        typeof apiMethod === 'string' &&
+        ['get', 'post'].includes(apiMethod?.toLowerCase()?.trim())
+      )
+    )
       return undefined
     try {
-      let rawResponse = await Axios.get(rawApiUrl, { ...apiOptions })
-      if (
-        !(
-          rawResponse &&
-          rawResponse.status === 200 &&
-          rawResponse?.[returnType ?? 'data']
+      let rawResponse
+      if (apiMethod?.toLowerCase()?.trim() === 'get')
+        rawResponse = await Axios.get(rawApiUrl, apiOptions)
+      else if (apiMethod?.toLowerCase()?.trim() === 'post')
+        rawResponse = await Axios.post(
+          rawApiUrl,
+          apiOptions?.postData,
+          apiOptions?.postConfig,
         )
-      )
+      else return undefined
+      if (!(rawResponse && rawResponse.status === 200))
         throw new Error('Invalid Response Fetched from Api Url')
-      else return rawResponse?.[returnType ?? 'data']
-    } catch (rawError) {
+      else if (
+        returnType &&
+        typeof returnType === 'string' &&
+        returnType?.toLowerCase()?.trim() === 'all'
+      )
+        return rawResponse?.[returnType ?? 'data']
+      else if (
+        returnType &&
+        typeof returnType === 'string' &&
+        rawResponse?.[returnType?.trim() ?? 'data']
+      )
+        return rawResponse?.[returnType?.trim() ?? 'data']
+      else
+        throw new Error(
+          'Invalid Response Object is Requested or Corrupted Request',
+        )
+    } catch {
       if (ignoreError) return utils.__errorHandling(rawError)
       else throw rawError
     }
   }
-
+  static __jsonParser(rawResponse, parseType = 'meta') {
+    if (
+      !(
+        rawResponse &&
+        typeof rawResponse === 'string' &&
+        rawResponse !== '' &&
+        typeof parseType === 'string' &&
+        parseType !== ''
+      )
+    )
+      return undefined
+    try {
+      switch (parseType?.toLowerCase()?.trim()) {
+        case 'meta':
+          return JSON.parse(
+            '{' +
+              rawResponse
+                ?.split('<meta ')
+                ?.filter(
+                  (raw) =>
+                    raw &&
+                    raw?.includes('content=') &&
+                    !raw?.includes('referrer'),
+                )
+                ?.map((raw) => {
+                  try {
+                    raw = raw?.split('/>')?.[0]
+                    if (!(raw && typeof raw === 'string' && raw !== ''))
+                      return undefined
+                    else if (raw?.startsWith('property=')) {
+                      return `${raw
+                        ?.slice(
+                          raw?.indexOf('property=') + 'property='.length,
+                          raw?.indexOf('content='),
+                        )
+                        ?.replace('og:', '')
+                        ?.replace('al:', '')
+                        ?.replace(/[~`!@#$%^&*()+={}\[\];:<>.,\/\\\?-_]/g, '_')
+                        ?.trim()}:${raw
+                        ?.slice(
+                          raw?.indexOf('content=') + 'content='.length,
+                          raw?.length,
+                        )
+                        ?.replace(/\n/g, '')
+                        ?.trim()}`
+                    } else if (raw?.startsWith('name=')) {
+                      return `${raw
+                        ?.slice(
+                          raw?.indexOf('name=') + 'name='.length,
+                          raw?.indexOf('content='),
+                        )
+                        ?.replace('og:', '')
+                        ?.replace('al:', '')
+                        ?.replace(/[~`!@#$%^&*()+={}\[\];:<>.,\/\\\?-]/g, '_')
+                        ?.trim()}:${raw
+                        ?.slice(
+                          raw?.indexOf('content=') + 'content='.length,
+                          raw?.length,
+                        )
+                        ?.replace(/\n/g, '')
+                        ?.trim()}`
+                    } else return undefined
+                  } catch {
+                    return undefined
+                  }
+                })
+                ?.filter(Boolean)
+                ?.join(',') +
+              `,"videoId": ${
+                rawResponse?.split(`"video_id":"`)?.[1]?.split(`"`)?.[0]
+              }` +
+              '}',
+          )
+        case 'script':
+          return JSON.parse(
+            rawResponse
+              ?.split('<script type="application')?.[1]
+              ?.split('</script>')?.[0]
+              ?.split(`">`)?.[1]
+              ?.split(',')
+              ?.filter(Boolean)
+              ?.map((raw) => raw?.replaceAll(/\\u0040/g, ''))
+              ?.join(','),
+          )
+      }
+    } catch {
+      return undefined
+    }
+  }
   static __cacheTemp(rawData, fileName = '__fbWatchPage.html') {
     if (!fileSystem.existsSync(path.join(__dirname, '/../cache')))
       fileSystem.mkdirSync(path.join(__dirname, '/../cache'))
