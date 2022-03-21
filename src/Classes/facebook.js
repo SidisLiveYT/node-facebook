@@ -1,4 +1,3 @@
-const { JSDOM } = require('jsdom')
 const utils = require('../Utils/__defaultUtils')
 
 class facebookTrack {
@@ -8,6 +7,12 @@ class facebookTrack {
     /(?:https?:\/{2})?(?:w{3}\.)?(facebook|fb).com\/.*\/videos\/.*/,
     /^(?:(https?):\/\/)?(?:(?:www|m|)\.)?(fb\.com|fb\.watch|facebook\.com|facebook\.watch)\/(.*)$/,
   ]
+  static __scrapperOptions = {
+    htmlOptions: undefined,
+    fetchOptions: { fetchStreamable: true },
+    ignoreError: true,
+    parseRaw: true,
+  }
   #__private = {
     rawResponse: undefined,
     rawJson: undefined,
@@ -39,7 +44,7 @@ class facebookTrack {
   }
   #patch(rawResponse, extraContents, returnOnly = false) {
     try {
-      const rawJsonResponse = JSON.parse(
+      let rawJsonResponse = JSON.parse(
           '{' +
             rawResponse
               ?.split('<meta ')
@@ -94,6 +99,7 @@ class facebookTrack {
         ),
         cookedStructure = {}
       this.#__private.rawJson = { ...rawJsonResponse, ...extraContents }
+      console.log(this.#__private.rawJson)
       if (this.#__private?.__scrapperOptions?.parseRaw)
         cookedStructure = this.parseRaw()
       else cookedStructure = this.#__private.rawJson
@@ -116,9 +122,31 @@ class facebookTrack {
     cookedStructure['title'] = rawEntries?.find(
       (raw) => raw?.[0] && raw?.[1] && raw[0] === 'title',
     )?.[1]
+    cookedStructure['description'] = rawEntries?.find(
+      (raw) => raw?.[0] && raw?.[1] && raw[0] === 'description',
+    )?.[1]
+    cookedStructure['url'] = rawEntries?.find(
+      (raw) => raw?.[0] && raw?.[1] && raw[0] === 'url',
+    )?.[1]
+    cookedStructure['image'] = rawEntries?.find(
+      (raw) => raw?.[0] && raw?.[1] && raw[0] === 'image',
+    )?.[1]
+    cookedStructure['image'] = rawEntries?.find(
+      (raw) => raw?.[0] && raw?.[1] && raw[0] === 'image',
+    )?.[1]
+    cookedStructure['keywords'] = rawEntries
+      ?.find((raw) => raw?.[0] && raw?.[1] && raw[0] === 'keywords')?.[1]
+      ?.split(',')
+      ?.filter(Boolean)
+      ?.map((raw) => raw?.trim())
+
     return cookedStructure
   }
-  static async html(rawUrl, __scrapperOptions, __cacheMain) {
+  static async html(
+    rawUrl,
+    __scrapperOptions = facebookTrack.__scrapperOptions,
+    __cacheMain,
+  ) {
     try {
       if (!(rawUrl && typeof rawUrl === 'string' && rawUrl !== ''))
         return undefined
@@ -131,6 +159,7 @@ class facebookTrack {
       )
         return undefined
       let rawTrack = new facebookTrack(rawResponse, __scrapperOptions)
+      console.log(rawTrack)
       return rawTrack
     } catch (rawError) {
       if (__scrapperOptions?.ignoreError) return utils.__errorHandling(rawError)
