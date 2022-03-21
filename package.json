@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/SidisLiveYT/node-facebook#readme",
   "dependencies": {
-    "axios": "^0.26.1"
+    "axios": "^0.26.1",
+    "http": "^0.0.1-security",
+    "https": "^1.0.0"
   }
 }
