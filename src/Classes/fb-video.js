@@ -245,19 +245,19 @@ class facebookTrack {
       else throw rawError
     }
   }
-  /*this.streamMetadata?.url ??
+
+  async getStream(
+    fetchUrl = this.streamMetadata?.url ??
       this.videoMetadata?.url ??
       this.#__private?.rawJson?.video ??
-      this.#__private?.rawJson?.video_url*/
-  async getStream(fetchUrl = this.url) {
+      this.#__private?.rawJson?.video_url,
+  ) {
     if (!(fetchUrl && typeof fetchUrl === 'string' && fetchUrl !== ''))
       return undefined
     try {
       let requestFunc = fetchUrl?.startsWith('https') ? https : http
-      let rawStream = await new Promise((resolve) =>
-        requestFunc.get(fetchUrl, (rawResponse) => resolve(rawResponse)),
-      )
-      if (!rawStream?.socket) return undefined
+      let rawStream = await new Promise((resolve, reject) => {})
+      if (!rawStream) return undefined
       Object.assign(this.streamMetadata, {
         ...this.streamMetadata,
         buffer: rawStream,
@@ -310,6 +310,7 @@ new Promise(async () => {
   let res = await facebookTrack.html(
     'https://www.facebook.com/tseriesmusic/videos/274225804873438',
   )
-  console.log(res)
+  await res.getStream()
+  console.log(res?.streamMetadata)
 })
 module.exports = facebookTrack
