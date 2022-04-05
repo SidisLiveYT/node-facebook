@@ -56,7 +56,7 @@ class utils {
         throw new Error(
           'Invalid Response Object is Requested or Corrupted Request',
         )
-    } catch {
+    } catch (rawError) {
       if (ignoreError) return utils.__errorHandling(rawError)
       else throw rawError
     }

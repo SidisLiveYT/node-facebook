@@ -15,6 +15,7 @@ class facebookTrack {
     ignoreError: true,
     parseRaw: true,
   }
+
   #__private = {
     rawResponse: undefined,
     rawJson: undefined,
@@ -50,10 +51,11 @@ class facebookTrack {
         ...extraContents,
         ...rawScriptJson,
         streamMetadata: {
-          url:
+          url: decodeURIComponent(
             rawMetaJson['video'] ??
-            rawMetaJson['video_url'] ??
-            rawMetaJson['video_secure_url'],
+              rawMetaJson['video_url'] ??
+              rawMetaJson['video_secure_url'],
+          )?.replace(/&amp;/g, '&'),
         },
       }
       if (this.#__private?.__scrapperOptions?.parseRaw)
@@ -149,13 +151,33 @@ class facebookTrack {
         headline: rawEntries?.find(
           (raw) => raw?.[0] && raw?.[1] && raw[0] === 'headline',
         )?.[1],
-        parentOf: rawEntries?.find(
+        subPartof: rawEntries?.find(
           (raw) => raw?.[0] && raw?.[1] && raw[0] === 'isPartOf',
         )?.[1],
       }
-      cookedStructure['author'] = rawEntries?.find(
-        (raw) => raw?.[0] && raw?.[1] && raw[0] === 'author',
-      )?.[1]
+      cookedStructure['author'] = {
+        type: rawEntries?.find(
+          (raw) => raw?.[0] && raw?.[1] && raw[0] === 'author',
+        )?.[1]?.['type'],
+        name: rawEntries?.find(
+          (raw) => raw?.[0] && raw?.[1] && raw[0] === 'author',
+        )?.[1]?.['name'],
+        identifier: rawEntries?.find(
+          (raw) => raw?.[0] && raw?.[1] && raw[0] === 'author',
+        )?.[1]?.['identifier'],
+        url: rawEntries?.find(
+          (raw) => raw?.[0] && raw?.[1] && raw[0] === 'author',
+        )?.[1]?.['url'],
+        image: rawEntries?.find(
+          (raw) => raw?.[0] && raw?.[1] && raw[0] === 'author',
+        )?.[1]?.['image'],
+        address: rawEntries?.find(
+          (raw) => raw?.[0] && raw?.[1] && raw[0] === 'author',
+        )?.[1]?.['address'],
+        establishDate: rawEntries?.find(
+          (raw) => raw?.[0] && raw?.[1] && raw[0] === 'author',
+        )?.[1]?.['foundingDate'],
+      }
       cookedStructure['comments'] = {
         count: rawEntries?.find(
           (raw) => raw?.[0] && raw?.[1] && raw[0] === 'commentCount',
@@ -245,7 +267,6 @@ class facebookTrack {
       else throw rawError
     }
   }
-
   async getStream(
     fetchUrl = this.streamMetadata?.url ??
       this.videoMetadata?.url ??
@@ -256,8 +277,10 @@ class facebookTrack {
       return undefined
     try {
       let requestFunc = fetchUrl?.startsWith('https') ? https : http
-      let rawStream = await new Promise((resolve, reject) => {})
-      if (!rawStream) return undefined
+      let rawStream = await new Promise((resolve) =>
+        requestFunc.get(fetchUrl, (rawResponse) => resolve(rawResponse)),
+      )
+      if (!rawStream?.socket) return undefined
       Object.assign(this.streamMetadata, {
         ...this.streamMetadata,
         buffer: rawStream,
@@ -306,11 +329,5 @@ class facebookTrack {
     return this.#__private?.rawResponse
   }
 }
-new Promise(async () => {
-  let res = await facebookTrack.html(
-    'https://www.facebook.com/tseriesmusic/videos/274225804873438',
-  )
-  await res.getStream()
-  console.log(res?.streamMetadata)
-})
+
 module.exports = facebookTrack
